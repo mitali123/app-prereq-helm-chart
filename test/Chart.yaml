@@ -1,0 +1,10 @@
+apiVersion: v2
+name: test
+description: A Helm chart for Kubernetes
+force: true
+maintainers:
+  - email: divyagirase90@gmail.com
+    name: Divya Girase
+  - email: manjarekarmitali1995@gmail.com
+    name: Mitali Manjarekar 
+version: 1.0.1

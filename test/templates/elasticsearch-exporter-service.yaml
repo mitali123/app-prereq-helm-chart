@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+  name: elasticsearch-exporter
+spec:
+  type: {{ .Values.es_ex_service.type }}
+  ports:
+    - name: {{ .Values.es_ex_service.metricsPort.name }}
+      port: {{ .Values.es_ex_service.httpPort }}
+      protocol: TCP
+  selector:
+    app: elasticsearch-exporter

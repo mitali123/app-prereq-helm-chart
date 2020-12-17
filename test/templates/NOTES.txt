@@ -1,0 +1,11 @@
+* * * * * * * * * * * APP-PRE-REQ HELM CHART * * * * * * * * * * * 
+														
+Run your helm chart by giving required parameters			
+helm install _name_ ./test/ 	
+
+Uninstall your helm chart as follows
+helm uninstall _name_			    	
+				
+* * * * * * * * * * * * * * * END * * * * * * * * * * * * * *
+
+

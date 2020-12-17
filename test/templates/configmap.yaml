@@ -1,0 +1,78 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap
+data:
+  topics: watch,weather
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-topics
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: topics
+        image: confluentinc/cp-kafka:5.0.0
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: ZOOKEEPERS
+          value: zoo1:2181
+        - name: TOPICS
+          valueFrom:
+            configMapKeyRef:
+              name: configmap
+              key: topics
+        command:
+        - bash
+        - -c
+        - |
+          IFS=',' read -ra topics <<< "$TOPICS"
+          for topic in ${topics[@]}
+          do
+            echo "Creating topic $topic..."
+            kafka-topics --zookeeper $ZOOKEEPERS --create --topic $topic --partitions 1 --replication-factor 1 --if-not-exists
+          done
+# ---
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: configmap
+# data:
+#   topics: watch,weather
+# ---
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: create-topics
+# spec:
+#   backoffLimit: 4
+#   template:
+#     spec:
+#       restartPolicy: Never
+#       containers:
+#       - name: topics
+#         image: confluentinc/cp-kafka:5.0.0
+#         imagePullPolicy: IfNotPresent
+#         env:
+#         - name: ZOOKEEPERS
+#           value: zoo1:2181
+#         - name: TOPICS
+#           valueFrom:
+#             configMapKeyRef:
+#               name: configmap
+#               key: topics
+#         command:
+#         - bash
+#         - -c
+#         - |
+#           IFS=',' read -ra topics <<< "$TOPICS"
+#           for topic in ${topics[@]}
+#           do
+#             echo "Creating topic $topic..."
+#             kafka-topics --zookeeper $ZOOKEEPERS --create --topic $topic --partitions 3 --replication-factor 2 --if-not-exists
+#           done

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kafka-exporter
+  labels:
+    app: kafka-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-exporter
+  template:
+    metadata:
+      labels:
+        app: kafka-exporter
+    spec:
+      containers:
+        - name: kafka-exporter
+          image: danielqsj/kafka-exporter:latest
+          imagePullPolicy: IfNotPresent
+          args:
+            {{- if .Values.kafkaExporter}}
+            {{- range .Values.kafkaExporter.kafka.servers }}
+            - "--kafka.server={{ . }}"
+            {{- end }}
+            {{- if .Values.kafkaExporter.kafka.version }}
+            - --kafka.version={{ .Values.kafkaExporter.kafka.version }}
+            {{- end }}
+            {{- end}}
+            {{- if .Values.kafkaExporter.sasl.enabled }}
+            - --sasl.enabled
+            {{- if not .Values.kafkaExporter.sasl.handshake }}
+            - --sasl.handshake=false
+            {{- end }}
+            - --sasl.username={{ .Values.kafkaExporter.sasl.username }}
+            - --sasl.password={{ .Values.kafkaExporter.sasl.password }}
+            {{- end }}
+            {{- if .Values.kafkaExporter.log }}
+            - --log.level={{ .Values.kafkaExporter.log.level }}
+            {{- if .Values.kafkaExporter.log.enableSarama }}
+            - --log.enable-sarama
+            {{- end }}
+            {{- end }}
+          ports:
+            - name: metrics
+              containerPort: 9308
+              protocol: TCP

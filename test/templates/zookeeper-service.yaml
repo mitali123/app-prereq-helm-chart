@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zoo1
+spec:
+  type: ClusterIP 
+  selector:
+    component: zookeeper1
+  ports:
+  - name: client
+    port: 2181
+    targetPort: 2181
+    protocol: TCP 
+  - name: follower
+    port: 2888
+    protocol: TCP 
+  - name: leader
+    port: 3888
+    protocol: TCP 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zoo2
+spec:
+  type: ClusterIP 
+  selector:
+    component: zookeeper2
+  ports:
+  - name: client
+    port: 2181
+    targetPort: 2181
+    protocol: TCP 
+  - name: follower
+    port: 2888
+    protocol: TCP 
+  - name: leader
+    port: 3888
+    protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zoo3
+spec:
+  type: ClusterIP 
+  selector:
+    component: zookeeper3
+  ports:
+  - name: client
+    port: 2181
+    targetPort: 2181
+    protocol: TCP 
+  - name: follower
+    port: 2888
+    protocol: TCP 
+  - name: leader
+    port: 3888
+    protocol: TCP

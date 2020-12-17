@@ -1,0 +1,134 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-deployment-1
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.deployment.strategy }}
+    {{ .Values.deployment.strategyKey }}:
+      maxSurge: {{ .Values.deployment.maxSurge }}
+      maxUnavailable: {{ .Values.deployment.maxUnavailable }}
+  minReadySeconds: {{ .Values.deployment.minReadySeconds }}
+  progressDeadlineSeconds: {{ .Values.deployment.progressDeadlineSeconds }}  
+  selector:
+    matchLabels:
+      component: zookeeper1
+  template:
+    metadata:
+      labels:
+        component: zookeeper1
+    spec:
+      containers:
+      - name: zookeeper1
+        image: digitalwonderland/zookeeper      
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+          - containerPort: 2181
+          - containerPort: 2888
+          - containerPort: 3888
+        env:
+        - name: ZOOKEEPER_ID
+          value: "1"
+        - name: ZOOKEEPER_SERVER_1
+          value: zoo1
+        - name: ZOOKEEPER_SERVER_2
+          value: zoo2
+        - name: ZOOKEEPER_SERVER_3
+          value: zoo3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-deployment-2
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.deployment.strategy }}
+    {{ .Values.deployment.strategyKey }}:
+      maxSurge: {{ .Values.deployment.maxSurge }}
+      maxUnavailable: {{ .Values.deployment.maxUnavailable }}
+  minReadySeconds: {{ .Values.deployment.minReadySeconds }}
+  progressDeadlineSeconds: {{ .Values.deployment.progressDeadlineSeconds }}  
+  selector:
+    matchLabels:
+      component: zookeeper2
+  template:
+    metadata:
+      labels:
+        component: zookeeper2
+    spec:
+      containers:
+      - name: zookeeper2
+        image: digitalwonderland/zookeeper      
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+          - containerPort: 2181
+          - containerPort: 2888
+          - containerPort: 3888
+        env:
+        - name: ZOOKEEPER_ID
+          value: "2"
+        - name: ZOOKEEPER_SERVER_1
+          value: zoo1
+        - name: ZOOKEEPER_SERVER_2
+          value: zoo2
+        - name: ZOOKEEPER_SERVER_3
+          value: zoo3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper-deployment-3
+spec:
+  replicas: 1
+  strategy:
+    type: {{ .Values.deployment.strategy }}
+    {{ .Values.deployment.strategyKey }}:
+      maxSurge: {{ .Values.deployment.maxSurge }}
+      maxUnavailable: {{ .Values.deployment.maxUnavailable }}
+  minReadySeconds: {{ .Values.deployment.minReadySeconds }}
+  progressDeadlineSeconds: {{ .Values.deployment.progressDeadlineSeconds }}  
+  selector:
+    matchLabels:
+      component: zookeeper3
+  template:
+    metadata:
+      labels:
+        component: zookeeper3
+    spec:
+      containers:
+      - name: zookeeper3
+        image: digitalwonderland/zookeeper      
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "125m"
+          limits:
+            memory: "128Mi"
+            cpu: "250m"
+        ports:
+          - containerPort: 2181
+          - containerPort: 2888
+          - containerPort: 3888
+        env:
+        - name: ZOOKEEPER_ID
+          value: "3"
+        - name: ZOOKEEPER_SERVER_1
+          value: zoo1
+        - name: ZOOKEEPER_SERVER_2
+          value: zoo2
+        - name: ZOOKEEPER_SERVER_3
+          value: zoo3

@@ -1,0 +1,182 @@
+# Default values for test.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+#Deployment Specification
+deployment:
+  strategy: RollingUpdate
+  strategyKey: rollingUpdate
+  maxSurge: 1
+  maxUnavailable: 0
+  minReadySeconds: 30
+  progressDeadlineSeconds: 35
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+kops_cluster: kops.prod.divya-girase.me
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+####------------------------ELASTICSEARCH EXPORTER-----------------------#####
+es_ex_log:
+  format: logfmt
+  level: info
+
+es_ex_service:
+  type: ClusterIP
+  httpPort: 9108
+  metricsPort:
+    name: http
+  annotations: {}
+  labels: {}
+
+es:
+  uri: http://elasticsearch.kube-logging:9200
+  ## If true, query stats for all nodes in the cluster, rather than just the
+  ## node we connect to.
+  all: true
+  ## If true, query stats for all indices in the cluster.
+  indices: true
+  ## If true, query settings stats for all indices in the cluster.
+  indices_settings: true
+  ## If true, query stats for shards in the cluster.
+  shards: true
+  ## If true, query stats for snapshots in the cluster.
+  snapshots: false
+  ## If true, query stats for cluster settings.
+  cluster_settings: false
+  ## Timeout for trying to get stats from Elasticsearch. (ex: 20s)
+  timeout: 30s
+  sslSkipVerify: false
+  ssl:
+    enabled: false
+    client:
+      enabled: false
+
+
+es_ex_web:
+  ## Path under which to expose metrics.
+  path: /metrics
+
+#####---------KAFKA EXPORTER--------------------######
+kafka_ex_service:
+  type: ClusterIP
+  port: 9308
+
+kafkaExporter:
+  kafka:
+    servers:
+      - kafka-1-ip-service:9092
+      - kafka-2-ip-service:9092
+      - kafka-3-ip-service:9092
+    # version: "1.0.0"
+
+  sasl:
+    enabled: false
+    handshake: true
+    username: ""
+    password: ""
+
+  log:
+    level: info
+    enableSarama: false
+
+####----------------------mginx-controller-----------------------####
+
+controller:
+  defaultTLS:
+    cert: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZwVENDQTQwQ0ZHVzdXalRIU2NwSisvSXhkVFJveC9kQWs1YitNQTBHQ1NxR1NJYjNEUUVCQ3dVQU1JR1kKTVFzd0NRWURWUVFHRXdKVlV6RUxNQWtHQTFVRUNBd0NUVUV4RHpBTkJnTlZCQWNNQmtKdmMzUnZiakVnTUI0RwpBMVVFQ2d3WFRtOXlkR2hsWVhOMFpYSnVJRlZ1YVhabGNuTnBkSGt4R2pBWUJnTlZCQU1NRVUxcGRHRnNhU0JOCllXNXFZWEpsYTJGeU1TMHdLd1lKS29aSWh2Y05BUWtCRmg1dFlXNXFZWEpsYTJGeWJXbDBZV3hwTVRrNU5VQm4KYldGcGJDNWpiMjB3SGhjTk1qQXhNVEl3TURVeU1EQTBXaGNOTWpFeE1USXdNRFV5TURBMFdqQ0JoREVMTUFrRwpBMVVFQmhNQ1ZWTXhDekFKQmdOVkJBZ01BazFCTVE4d0RRWURWUVFIREFaQ2IzTjBiMjR4RERBS0JnTlZCQW9NCkEwNUZWVEVhTUJnR0ExVUVBd3dSVFdsMFlXeHBJRTFoYm1waGNtVnJZWEl4TFRBckJna3Foa2lHOXcwQkNRRVcKSG0xaGJtcGhjbVZyWVhKdGFYUmhiR2t4T1RrMVFHZHRZV2xzTG1OdmJUQ0NBaUl3RFFZSktvWklodmNOQVFFQgpCUUFEZ2dJUEFEQ0NBZ29DZ2dJQkFMcXNTbEhHeStZN2VydXFwUUVKRlBNbVpDY2d2Uks4V3hhaVJpalZUdnpKCnl3M0RRQUhTRFBpcWZOWndicnRhQy9ZRVlNcURBVTlmMExpQlpFd25ybW9ia28rWlZMZXFsRVM4SW0yb1MyaUwKUWJucithS3ZncUEyZXpjOTNuL01DZG5DdSt3a0NUc1ZvM3BnaENFdllhTVpmNUVUeGlubHlxVCtObXlsQzl4OQprejJiUkFkVDlzRkhTV1g5MnQ5L1ZibDN6ZXJ3UjI2a1BWZkxiZkJnbStpdHZZMlNTYzNuZENlWmZwSitKUTZtCkkrd2F2aHI2bHltOUlJbi8yYzQwRVBVU1J5NDVQQ3VvVW1OMXFpbjlOSFpUT21qdlpmVXVwT0RFc0tTbE93Z0MKdHg0VEd5T2J4K3UxMWllUWVrL2NtTzE0ZWNzMjRBNGwyeEZHejRYbG9kNndlSFp0WDdGUTRQOHpDZysva1BWagpJdG9ZTlJEVE1rRWJNV29iNkpJa2VUanVReHlGVmdrd3VEZk40eGFXVWdHNGlnRmlSVlpsTTBzVzk2dUlzaHVWClRtOEFxR3lzeHZnZUtLOSt0S2ZTbGErSkphY0xJcTkwNEJjMWFKREoxMzFzeU14ejJITDRWeFoyTWFlL0RLU1UKcjhHSVY2WFdoaE1sbG1sa3JTM1drZC9aUHBrODU5TVRxaGxsb1JEdlNuQ2t2NTBYV21BNDJESmFBTm1SVnB5Rgo3T3ByUy9TamJaQUc0MFlFNFdMUHhHdjZMRzIwTjZ0eVVXdmJuSGlVZkRROStvQmREVFA1cHp6YmdXRHAxcFA2ClZWNFFSdWRiOFRSWnptRFJtcm82Wi9MQ094RjQ2SEdHejNSR1kvZThrb29MaUw4a3JCWnRzdnJpL0V2SmVNQmoKQWdNQkFBRXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnSUJBQWl5SjRCcDNiZjJIVEh6VzJpUEo0TjJWVFdwRklKUwpXWUR3K21NYzRrZVg5cHB3SzhyUkhCelgwYVh6K3Frb0t4RHJCOXYwMklWdjM5N0k2Rzgrd3FkLzZWdVlTTkVnCmNoZlZad1ZZWHl0NXdndTk2QjJsQk11Y1hpUXl0ZmhqdlFBUmxSRU9LZVdtZ1BFK1FvaUYxTXA2ZVJDeW5PL1cKQ1dvTUFEanhwa21iSjV0Wk5tZFpxRTVTeHEzdU80TzlHNklQM3Z2QXhGaEV3cG0zOGhxWkcwZitvbTBYTXBXdwplZzRBckRiazVvaVNzamc2ckdUMVFaVW54VnhlRURTMEdsZTYvQXR3ZGdFY0d0cHpZWUJsRGJ0ejhnaXp0RkVNCnBybU0xcDdxa1FDS09IT0JtZVVSOFpvRnEvemxzUHFRd25ValB3eHgvVkZCaTRKczEzZWtXNmx2R1FYODdKWi8KcTB4ajlKUVJqdFZVMzJ5SkIzMlE0V2pEZFhaUXlGTDZvanppOGt5L2FhNEcybStzbXlaZkw2Vm1IWGVvNlVCWApFZkRXQTQrb3BGNDhzb0tUcHRxZCtLdkp3ZXNPTE5seDh2WnhFZnhvdVd1bllCS2p2U3lCSk5zN2xxVnNGNVJ5CjNwVGNVS3BzWnRPQ2dZUi95aTlSQmFaY1I3ay9HOHl6WnM4ZU1oVk5aeXRZWTZwK2lVdy8yNlgxY25oQlFoTXUKV0xpbTJ0Zk53OTdpQXJtYXY0anRJUGxsdElYTDIyZDVhQW1IL0NqQU9oVFJ3eVZHV251MlFkeWFlZkNwZ3l0WgpVOWtDSm8wLzJodDA4Zk1XVTlERkxBMEJ5ZENKc3MzWFI5VHgyN0dqaXJ6a3dTeGtrSkh6dzQvcHdkTUhNdFhSCmR1cnlkWHFBbFNLZgotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlKS2dJQkFBS0NBZ0VBdXF4S1VjYkw1anQ2dTZxbEFRa1U4eVprSnlDOUVyeGJGcUpHS05WTy9NbkxEY05BCkFkSU0rS3A4MW5CdXUxb0w5Z1JneW9NQlQxL1F1SUZrVENldWFodVNqNWxVdDZxVVJMd2liYWhMYUl0QnVldjUKb3ErQ29EWjdOejNlZjh3SjJjSzc3Q1FKT3hXamVtQ0VJUzlob3hsL2tSUEdLZVhLcFA0MmJLVUwzSDJUUFp0RQpCMVAyd1VkSlpmM2EzMzlWdVhmTjZ2QkhicVE5Vjh0dDhHQ2I2SzI5alpKSnplZDBKNWwra240bERxWWo3QnErCkd2cVhLYjBnaWYvWnpqUVE5UkpITGprOEs2aFNZM1dxS2YwMGRsTTZhTzlsOVM2azRNU3dwS1U3Q0FLM0hoTWIKSTV2SDY3WFdKNUI2VDl5WTdYaDV5emJnRGlYYkVVYlBoZVdoM3JCNGRtMWZzVkRnL3pNS0Q3K1E5V01pMmhnMQpFTk15UVJzeGFodm9raVI1T081REhJVldDVEM0TjgzakZwWlNBYmlLQVdKRlZtVXpTeGIzcTRpeUc1Vk9id0NvCmJLekcrQjRvcjM2MHA5S1ZyNGtscHdzaXIzVGdGelZva01uWGZXekl6SFBZY3ZoWEZuWXhwNzhNcEpTdndZaFgKcGRhR0V5V1dhV1N0TGRhUjM5ayttVHpuMHhPcUdXV2hFTzlLY0tTL25SZGFZRGpZTWxvQTJaRlduSVhzNm10TAo5S050a0FialJnVGhZcy9FYS9vc2JiUTNxM0pSYTl1Y2VKUjhORDM2Z0YwTk0vbW5QTnVCWU9uV2svcFZYaEJHCjUxdnhORm5PWU5HYXVqcG44c0k3RVhqb2NZYlBkRVpqOTd5U2lndUl2eVNzRm0yeSt1TDhTOGw0d0dNQ0F3RUEKQVFLQ0FnRUFzZEgvZGNqV1lMbldIMERkcjQvVUtnOHZKbXEwVVUybHczalBOb1NEbXFBclVpL2xJQmJVam1meApSV0NTeXR0ck8yNU9PWHJ6MjRXZFVMVEpNeFkxdWhRTDE4aXEvODU1TU1TNlV4VVd5RDZuWEpFaUdzdnZ0ZWhRCkZYNVZIZzNpY0ZKbEt2dms0eWlvc3FHUUhBQ0RsSmRzZ21tQXdsYUlaQVZaR01OYitpeVEvd1dSbHgxdm1BdnQKS2ovWXFFQW5DK2JJKy96cFBzY3JQQituMld4ZCtCYlEwelJBSStsUUo0eTdHcGNaZTh2ZHVrSjdSejNna3p6Ngo2eG9TZzYvclcxaU8vOFE3d2lhMFhOUXdSWkZTMFVoVkFyTFJ2KzR2MTREbDkrRUJ5NDZ5bXU1K1VyeEpoQXFTCk50d1U5MUJmU1E4VGpmWDNGdU1PdkhWa3A5cm9CcFlwdHJzSFJudUZYZ2dVNUdCemIzOW1OR2xJZWhiZVczelEKeXBMTkJtWkFGRm0wa2FLL3hmNmN4U3gyc2V0Wi9xTm9CcTAwa2lid3VKMkFVQVNzQmZTK3Y0S1lmbFFCdXg5ZQpPWDdFd2RTWU43VENBY0tBbElwZXBnbElWZFFMTXpVbGE3NkxwellLRFdlckRFbkNGeFdTR3l4a1A3amVyQzRjClI4UGFwbko1elZRTDU0Tm9tOThiVXpYdXREY3BJdlRGM0pqZDk1b1g2SUV3Sk5kb3J5dkpiVHB5V0hjNVNsUzQKTkp1MzRQbm5BYUJtVXFWcEc1elpDU3luc3ZzdGRuZ01VWnBBR2NremsvYTBWWjJKQVFWQnpPU3pxb1p5WEZsZwpKN3BRSmhFVXZVU3hIQ1d3MDgyK3pJQVZzTG9FOGhoenU5MjBmYTk4c0JSRE5ZdGdQZ2tDZ2dFQkFONzJXRTBECnkzZytVQXB3Z3hrV05uOGNXOXpFdDY0a2RIeUVESjR4d2FsQ3A0VmVhZVBCM3NZTHFCU3pQTWpPSlhSZERSZnkKM3ppeEdSUjNQQm5LbjR3aGE2aGtiWEFvdUs2MW9mYVFzSHdwU044YUgxa1hJck84ZjZ0RWJ0SGpmc1BpaTlWRwpKdDFFWDdnYkZwa0JYYW9aWlREMXFvZTBvQ1JGcXVkN0RlSC9BbTB2UUFpMzNjUW4xYUozTFAzMUh0RHkzMkVDCi96alBQNGZRTHMvUlQ0UkVITzRTNU96K3hxTmVhTlpObFdETDg5eHBGNEFCeW1FNXR0eGJka0hZNEZBM1FEcnQKSXRhMVZLSTQ0WU5tNU05RjJ0eDNNYnJka2V3TWtxbWV1RzV4NVVvd3ZIa2ZzbXYyRHU4YUtLVHRPMWJycURrUgp3VUtmMS9vaHN1YWFSZThDZ2dFQkFOWlZZVU53cVZaMi9VdDN6N2t1NzkrdkdjT1krdWtDbnBPeHl0VXJwa2EwCjFETy95RUc1WllqSU5Yekk1ZWx1eGwzOW1Ybm51RVlZNGxJZHhHZzVYalJhVmlzaE1PR2tCVitzT3BrYWwvelcKRHE5SmI0SDV6bHh3T2p6VWRObDZGZE82Yk03cG1lN3ora0xTREp5dHU4TU1TdWMra1dNc0ZmeVgraVlqR2xaQwpNSHRIMkZPN3N3ZFpTQXJhQ0poT2VhUVkrWklZN3FIdFJscnNoSjhraWc4cktaMTBzSDBvN1BNWjhqa0ZEVFpBCkZ0RjZpN2JyZ25DdUxqcnZlUnRwb1FHNXZ5TDFlMENKdEdIUUdNOTJ3VytCWXgzbEtMcnBTOGhzdFVBL25mdE4KMVg5TUJuWEcwQ1VXQ1E5clhZdmNGMzRjeTRjbHh5L3BlS3EzSnVPOVFNMENnZ0VCQUlCbXdpZG9IZzliWTJELwp0cUFGNk5CL0ZuQW5ZZGlKNmdPalVGanlNcU0xWGFBeTVTeGpBOVp0OUJnbnVNT3o1R0lGREh0VVJUVXkyRXl1CjlnK3NYd0dtWlllT2ZtL3ZJNXlKd1lKcmhSZWI5dmwwNDhTOHpDRlNWdnZjNXkwOHBFNU84MVNabDl3cGVpNWUKZXo4V1NFaWpZMkUwdVVaNXdSZmlmeS9iNy96TWpTc3Y0T0trY0xSOGRFMmg4R2s0ZHN6Q2NkNCtpWmkvMGNoMwpIZDVVbmtSL3JXRjF4Qnl3Qk5ra2o1K0xBcEhDSXVnMkpYQjBsNFl5WkpxMm1YNEdWZmdjT1lNMStiQklzVHJUCkl4dzNiMkhteXNuWVl1MUltTGFsN3ZoOERaNmRQUHppNEVlbzkybXhSSnh5SmlJRTlQMXpyV2RnVURuOEw3Yy8KSFBZc3RrVUNnZ0VCQUpXZzFWMzNjTUJrSVVCbVRDWERsc0padzJyQmlhalJvMU1JYzhtTngyN2xIcDloNjdPMgpjaU9qWVhQVDdHMmlYK21OK1c4WlRaUGlHMTJvV2sxSWYzT2MvVHJ1Mk9rdFVITVNFWGFCRWtuNFJoZ285Q2VRCjlYZWpBWVVsN00xR1phYUNKeVBzQVFMSVlKWDFmY2lEb09qeDAvakx2VU8ycTBMRDltWlphekY4MDh1OHhGRHcKWUhObzZOcHFqRVdIdzNQRDI3Y2FvTDE2bi9zcDB3d212aHNJenV5VllnQithYXp0R0NTbVdpcmRZeENxdEk3bQpxeEZ2Qitjczl5Y2ovcnJ0cVhvR1ZoMGdCVVdqdVM1Y2dYNE9uZHRvOTU1RThCcmppVVZwSkNra2xUOWhHOEZ0CklqSkJ4K0Z6MnNLZ3krWEd4Rzk4K0NtQ25ETFIyZHh6YXFFQ2dnRUFPSXJVWTNqNjdWdWVrVURtemZrZzdpTzIKZFdtdk54WGNJN3dpbG8vVmxFazRjWkhha3Q0TEl2ako5alVRRzVnOTFKNGRTRWNqaEtxWWo4U1FkeGFoVG8xMQplc1VuODNPVU9xUitEdTRkWWtENm1kSkp1YmdKblZycTdZdHIwdStXaXVIS3A0OVhVWEl5OTRYa2tFaHVuMWFnCno0OXp5TjFQbGo5c1FZV0xwNXFjSkNwbENRY1BlS3pZZTVoM2xMMUR4cU5KY3F5R21pd3ZKREZCQ240Z0RpakoKOFMvd2RSayt6SGlEa0wvSlBGVHdCd3R2UmVxZFdhWXBYYU16S1QzNmp1OHZXSk90enQrWTV2bFNRcitQV2ZZdwpHK1pNWUUwMUZldzBUQ1o3TWd1Y2VJVjBTYVc3QzVvVlhqbi9ubjhKanIwU2dsQ1BEUWZrRVpGdkxRUEYydz09Ci0tLS0tRU5EIFJTQSBQUklWQVRFIEtFWS0tLS0tCg==
+    secret: default/nginx-ingress-default-server-secret
+  ingressClass: nginx
+  useIngressClassOnly: false
+  setAsDefaultIngress: false
+  healthStatus: false
+  healthStatusURI: "/nginx-health"
+  nginxStatus:
+    enable: true
+    port: 8080
+    allowCidrs: "127.0.0.1"
+  reportIngressStatus:
+    enable: true
+    enableLeaderElection: true
+    annotations: {}
+  wildcardTLS:
+    cert: ""
+    key: ""
+    secret:
+  enableCustomResources: false
+  enableTLSPassthrough: false
+  apidnsname: api.prod1.mitalimanjarekar.me
+
+###-------------------elasticsearch-----------------------------------###
+elasticsearch:
+  storageclass: azurefile
